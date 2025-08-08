@@ -21,7 +21,7 @@ func TestFlattenAndUnflatten(t *testing.T) {
 		}
 	}`
 
-	data, _ := jsonpathmap.MarshalJSONStr(jsonStr)
+	data, _ := jsonpathmap.UnMarshalJSON(jsonStr)
 	pvs, _ := jsonpathmap.FlattenJSON(data)
 
 	for _, pv := range pvs {
@@ -29,18 +29,9 @@ func TestFlattenAndUnflatten(t *testing.T) {
 	}
 
 	recovered, _ := jsonpathmap.UnflattenJSON(pvs)
-	t.Log(jsonpathmap.ToJSONStr(recovered))
+	t.Log(jsonpathmap.MarshalJSON(recovered))
 
-	if jsonpathmap.ToJSONStr(data) != jsonpathmap.ToJSONStr(recovered) {
+	if jsonpathmap.MarshalJSON(data) != jsonpathmap.MarshalJSON(recovered) {
 		t.Error("flatten and unflatten mismatch")
-	}
-}
-
-func TestNormalizeArrayPath(t *testing.T) {
-	path := "data.items[0].description"
-	want := "data.items[].description"
-	got := jsonpathmap.NormalizeArrayPath(path)
-	if got != want {
-		t.Errorf("got %s, want %s", got, want)
 	}
 }

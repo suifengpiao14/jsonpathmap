@@ -18,8 +18,9 @@ type PathValues []PathValue
 // NormalizeArrayPath 将数组路径规范化，例如将 data.items[0].description 转换为 data.items[].description 用于从数据示例到文档格式
 func (ps PathValues) NormalizeArrayPath() PathValues {
 	var result PathValues
+	re := regexp.MustCompile(`\[\d+\]`)
 	for _, pv := range ps {
-		path := NormalizeArrayPath(pv.Path)
+		path := re.ReplaceAllString(pv.Path, "[]")
 		result = append(result, PathValue{Path: path, Value: pv.Value})
 	}
 	return result
@@ -147,12 +148,6 @@ func setValueByPath(root map[string]any, path string, value any) error {
 	return nil
 }
 
-// NormalizeArrayPath 将带数组索引的 path 转为无索引版本（全部替换为 []）
-func NormalizeArrayPath(path string) string {
-	re := regexp.MustCompile(`\[\d+\]`)
-	return re.ReplaceAllString(path, "[]")
-}
-
 // parsePath 按 "." 分割 path，保留 [] 信息
 func parsePath(path string) []string {
 	parts := strings.Split(path, ".")
@@ -170,15 +165,15 @@ func parseArrayKey(key string) (base string, idx int, isArray bool) {
 	return key, 0, false
 }
 
-// MarshalJSONStr 工具函数：JSON字符串转 any
-func MarshalJSONStr(jsonStr string) (any, error) {
+// UnMarshalJSON 工具函数：JSON字符串转 any
+func UnMarshalJSON(jsonStr string) (any, error) {
 	var v any
 	err := json.Unmarshal([]byte(jsonStr), &v)
 	return v, err
 }
 
-// ToJSONStr 工具函数：any 转 JSON 字符串
-func ToJSONStr(v any) string {
+// MarshalJSON 工具函数：any 转 JSON 字符串
+func MarshalJSON(v any) string {
 	b, _ := json.MarshalIndent(v, "", "  ")
 	return string(b)
 }
