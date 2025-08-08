@@ -51,8 +51,19 @@ func (ps PathValues) Unqueue() PathValues {
 // FlattenJSON 将任意 JSON 数据拍平成 path->value 格式
 func FlattenJSON(data any) (PathValues, error) {
 	var result PathValues
-	err := flattenValue(data, "", &result)
-	return result, err
+	b, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(b, &data) //确保data 是 map[string]any 或者 []any 类型
+	if err != nil {
+		return nil, err
+	}
+	err = flattenValue(data, "", &result)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 func flattenValue(data any, prefix string, result *PathValues) error {
