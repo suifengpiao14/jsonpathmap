@@ -28,7 +28,7 @@ func TestFlattenAndUnflatten(t *testing.T) {
 		t.Logf("%s = %v", pv.Path, pv.Value)
 	}
 
-	recovered, _ := jsonpathmap.UnflattenJSON(pvs...)
+	recovered, _ := jsonpathmap.UnflattenJSON(pvs)
 	t.Log(jsonpathmap.ToJSONStr(recovered))
 
 	if jsonpathmap.ToJSONStr(data) != jsonpathmap.ToJSONStr(recovered) {
