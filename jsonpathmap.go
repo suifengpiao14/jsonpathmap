@@ -15,6 +15,11 @@ type PathValue struct {
 
 type PathValues []PathValue
 
+func (ps PathValues) String() string {
+	b, _ := json.Marshal(ps)
+	return string(b)
+}
+
 // NormalizeArrayPath 将数组路径规范化，例如将 data.items[0].description 转换为 data.items[].description 用于从数据示例到文档格式
 func (ps PathValues) NormalizeArrayPath() PathValues {
 	var result PathValues
@@ -23,6 +28,7 @@ func (ps PathValues) NormalizeArrayPath() PathValues {
 		path := re.ReplaceAllString(pv.Path, "[]")
 		result = append(result, PathValue{Path: path, Value: pv.Value})
 	}
+	result = result.Unqueue()
 	return result
 }
 
@@ -48,8 +54,21 @@ func (ps PathValues) Unqueue() PathValues {
 	return result
 }
 
-// FlattenJSON 将任意 JSON 数据拍平成 path->value 格式
-func FlattenJSON(data any) (PathValues, error) {
+func FlattenJSON(b []byte) (result PathValues, err error) {
+	var data any
+	err = json.Unmarshal(b, &data)
+	if err != nil {
+		return nil, err
+	}
+	err = flattenValue(data, "", &result)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+// Deprecated use FlattenJSONBytes FlattenJSON 将任意 JSON 数据拍平成 path->value 格式
+func FlattenJSONV0(data any) (PathValues, error) {
 	var result PathValues
 	b, err := json.Marshal(data)
 	if err != nil {
@@ -177,14 +196,14 @@ func parseArrayKey(key string) (base string, idx int, isArray bool) {
 }
 
 // UnMarshalJSON 工具函数：JSON字符串转 any
-func UnMarshalJSON(jsonStr string) (any, error) {
-	var v any
-	err := json.Unmarshal([]byte(jsonStr), &v)
-	return v, err
-}
+// func UnMarshalJSON(jsonStr string) (any, error) {
+// 	var v any
+// 	err := json.Unmarshal([]byte(jsonStr), &v)
+// 	return v, err
+// }
 
 // MarshalJSON 工具函数：any 转 JSON 字符串
-func MarshalJSON(v any) string {
-	b, _ := json.MarshalIndent(v, "", "  ")
-	return string(b)
-}
+// func MarshalJSON(v any) string {
+// 	b, _ := json.MarshalIndent(v, "", "  ")
+// 	return string(b)
+// }

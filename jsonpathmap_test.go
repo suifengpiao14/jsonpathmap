@@ -1,8 +1,10 @@
 package jsonpathmap_test
 
 import (
+	"encoding/json"
 	"testing"
 
+	"github.com/stretchr/testify/require"
 	"github.com/suifengpiao14/jsonpathmap"
 )
 
@@ -20,18 +22,15 @@ func TestFlattenAndUnflatten(t *testing.T) {
 			"total": "2"
 		}
 	}`
-
-	data, _ := jsonpathmap.UnMarshalJSON(jsonStr)
-	pvs, _ := jsonpathmap.FlattenJSON(data)
+	pvs, _ := jsonpathmap.FlattenJSON([]byte(jsonStr))
 
 	for _, pv := range pvs {
 		t.Logf("%s = %v", pv.Path, pv.Value)
 	}
 
 	recovered, _ := jsonpathmap.UnflattenJSON(pvs)
-	t.Log(jsonpathmap.MarshalJSON(recovered))
+	b, err := json.MarshalIndent(recovered, "", "  ")
+	require.NoError(t, err)
+	require.JSONEq(t, jsonStr, string(b))
 
-	if jsonpathmap.MarshalJSON(data) != jsonpathmap.MarshalJSON(recovered) {
-		t.Error("flatten and unflatten mismatch")
-	}
 }
